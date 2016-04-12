@@ -5,13 +5,18 @@ SublimeLinter-contrib-sublime-syntax
 
 This linter plugin for [SublimeLinter][docs] provides an interface to Sublime Text's internal syntax testing engine. It will be used on files that define syntax tests for Sublime Text (i.e. files starting with `syntax_test`).
 
+![screenshot](https://cloud.githubusercontent.com/assets/931051/14467995/26f9885e-00de-11e6-8261-8a1cd91f1d0c.png)
+
+*Notice*: This linter relies on undocumented and unpublic API of Sublime Text and may break on any new Sublime Text release.
+
+**You must be using Sublime Text Build 3092 or higher in order to install and use this linter.**
+
 ## Installation
 SublimeLinter 3 must be installed in order to use this plugin. If SublimeLinter 3 is not installed, please follow the instructions [here][installation].
 
 ### Plugin installation
 Please use [Package Control][pc] to install the linter plugin. This will ensure that the plugin will be updated when new versions are available. If you want to install from source so you can modify the source code, you probably know what you are doing so we won’t cover that here.
 
-**You must be using Sublime Text Build 3092 or higher in order to install and use this linter.**
 
 To install via Package Control, do the following:
 

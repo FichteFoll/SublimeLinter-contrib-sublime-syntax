@@ -136,7 +136,7 @@ def _temporary_resource_file(text, prefix='', suffix=''):
             persist.printf("{}: created temporary file at {}".format(p_name, temp_file_path))
 
         try:
-            with open(fd, 'w') as f:
+            with open(fd, 'w', encoding='utf-8') as f:
                 f.write(text)
             temp_file_resource_path = "/".join(["Packages", _temp_dir_name,
                                                 os.path.basename(temp_file_path)])

@@ -20,6 +20,10 @@ import sublime_api
 from SublimeLinter.lint import Linter, persist
 
 
+# For debug printing
+p_name = "sublime-syntax"
+
+
 class SublimeSyntax(Linter):
 
     """Provides an interface to sublime-syntax.
@@ -68,8 +72,8 @@ class SublimeSyntax(Linter):
 
         output = "\n".join(test_output_lines)
         if persist.debug_mode():
-            persist.printf('{}: "{}" assertions: {}'.format(self.name, basename, assertions))
-            persist.printf('{}: "{}" output: \n  {}'.format(self.name, basename,
+            persist.printf('{}: "{}" assertions: {}'.format(p_name, basename, assertions))
+            persist.printf('{}: "{}" output: \n  {}'.format(p_name, basename,
                                                             "\n  ".join(test_output_lines)))
 
         return output
@@ -103,7 +107,7 @@ def _remove_temp_path():
     if os.path.exists(_temp_path):
         def onerror(function, path, excinfo):
             persist.printf("{}: Unable to delete '{}' while cleaning up temporary directory"
-                           .format(SublimeSyntax.name, path))
+                           .format(p_name, path))
             import traceback
             traceback.print_exc(*excinfo)
         import shutil
@@ -129,8 +133,7 @@ def _temporary_resource_file(text, prefix='', suffix=''):
     try:
         fd, temp_file_path = tempfile.mkstemp(prefix=prefix, suffix=suffix, dir=_temp_path)
         if persist.debug_mode():
-            persist.printf("{}: created temporary file at {}"
-                           .format(SublimeSyntax.name, temp_file_path))
+            persist.printf("{}: created temporary file at {}".format(p_name, temp_file_path))
 
         try:
             with open(fd, 'w') as f:
@@ -148,5 +151,4 @@ def _temporary_resource_file(text, prefix='', suffix=''):
             os.rmdir(_temp_path)
         except OSError as e:
             if persist.debug_mode():
-                persist.printf("{}: unable to delete temporary folder; {}"
-                               .format(SublimeSyntax.name, e))
+                persist.printf("{}: unable to delete temporary folder; {}".format(p_name, e))

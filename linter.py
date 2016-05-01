@@ -73,8 +73,9 @@ class SublimeSyntax(Linter):
         output = "\n".join(test_output_lines)
         if persist.debug_mode():
             persist.printf('{}: "{}" assertions: {}'.format(p_name, basename, assertions))
-            persist.printf('{}: "{}" output: \n  {}'.format(p_name, basename,
-                                                            "\n  ".join(test_output_lines)))
+            # SublimeLinter internally already prints the output we return
+            # persist.printf('{}: "{}" output: \n  {}'.format(p_name, basename,
+            #                                                 "\n  ".join(test_output_lines)))
 
         return output
 

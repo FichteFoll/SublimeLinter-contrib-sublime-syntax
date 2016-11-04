@@ -100,19 +100,29 @@ def plugin_loaded():
 
 def plugin_unloaded():
     """Remove temporary path."""
-    _remove_temp_path()
+    # Don't block plugin unloading by not catching an exception
+    try:
+        _remove_temp_path()
+    except Exception:
+        import traceback
+        traceback.print_exc()
 
 
 def _remove_temp_path():
     """Try to clean our temp dir if it exists."""
     if os.path.exists(_temp_path):
-        def onerror(function, path, excinfo):
-            persist.printf("{}: Unable to delete '{}' while cleaning up temporary directory"
-                           .format(p_name, path))
-            import traceback
-            traceback.print_exc(*excinfo)
-        import shutil
-        shutil.rmtree(_temp_path, onerror=onerror)
+        if os.path.isdir(_temp_path):
+            def onerror(function, path, excinfo):
+                persist.printf("{}: Unable to delete '{}' while cleaning up temporary directory"
+                               .format(p_name, path))
+                import traceback
+                traceback.print_exc(*excinfo)
+            import shutil
+            shutil.rmtree(_temp_path, onerror=onerror)
+        else:
+            persist.printf("{}: For some reason, '{}' is a file. Removing..."
+                           .format(p_name, _temp_path))
+            os.remove(_temp_path)
 
 
 @contextlib.contextmanager
@@ -144,7 +154,8 @@ def _temporary_resource_file(text, prefix='', suffix=''):
             yield temp_file_resource_path
         finally:
             os.remove(temp_file_path)
-
+    except FileNotFoundError:
+        _remove_temp_path()
     finally:
         # And remove the folder, if it's empty.
         # Otherwise wait for a "restart".

@@ -46,21 +46,25 @@ class SublimeSyntax(Linter):
     )
     word_re = r'.'  # only highlight a single character
 
-    def run(self, cmd, code):
-        """Check if file is 'lintable' and perform linting."""
-        # It has to start with `"syntax_test"`
-        # and has a specific first line, technically.
-        # We only require one of each
-        # (to also lint unsaved views).
-        basename = os.path.basename(self.filename)
+    @classmethod
+    def can_lint_view(cls, view, settings):
+        """Check if file is 'lintable'."""
+        filename = view.file_name() or ''
+        basename = os.path.basename(filename)
         if not basename or not basename.startswith("syntax_test"):
             # This actually gets reported by the test runner,
             # so we only check for an additionally qualifying file
             # if the filename check fails.
+            code = view.substr(sublime.Region(0, view.size()))
             first_line = code[:code.find("\n")]
             match = re.match(r'^(\S*) SYNTAX TEST "([^"]*)"', first_line)
             if not match:
-                return
+                return False
+
+        return super().can_lint_view(view, settings)
+
+    def run(self, cmd, code):
+        """Perform linting."""
 
         # The syntax test runner only operates on resource files that the resource loader can load,
         # which must reside in a "Packages" folder
@@ -71,7 +75,9 @@ class SublimeSyntax(Linter):
             assertions, test_output_lines = sublime_api.run_syntax_test(resource_path)
 
         output = "\n".join(test_output_lines)
+
         if persist.debug_mode():
+            basename = os.path.basename(self.filename)
             persist.printf('{}: "{}" assertions: {}'.format(p_name, basename, assertions))
             # SublimeLinter internally already prints the output we return
             # persist.printf('{}: "{}" output: \n  {}'.format(p_name, basename,

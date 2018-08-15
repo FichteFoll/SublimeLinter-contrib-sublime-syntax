@@ -56,17 +56,21 @@ class SublimeSyntax(Linter):
 
         filename = view.file_name() or ''
         basename = os.path.basename(filename)
-        if not basename or not basename.startswith("syntax_test"):
-            # This actually gets reported by the test runner,
-            # so we only check for an additionally qualifying file
-            # if the filename check fails.
-            code = view.substr(sublime.Region(0, view.size()))
-            first_line = code[:code.find("\n")]
-            match = re.match(r'^(\S*) SYNTAX TEST "([^"]*)"', first_line)
-            if not match:
-                return False
 
-        return True
+
+        # Fast path
+        if basename and basename.startswith("syntax_test"):
+            return True
+
+        # But, essentially all files can be syntax tests, if they contain
+        # a magic first line
+        code = view.substr(sublime.Region(0, view.size()))
+        first_line = code[:code.find("\n")]
+        match = re.match(r'^(\S*) SYNTAX TEST "([^"]*)"', first_line)
+        if match:
+            return True
+
+        return False
 
     def run(self, cmd, code):
         """Perform linting."""

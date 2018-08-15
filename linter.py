@@ -64,8 +64,7 @@ class SublimeSyntax(Linter):
 
         # But, essentially all files can be syntax tests, if they contain
         # a magic first line
-        code = view.substr(sublime.Region(0, view.size()))
-        first_line = code[:code.find("\n")]
+        first_line = view.substr(view.line(0))
         match = re.match(r'^(\S*) SYNTAX TEST "([^"]*)"', first_line)
         if match:
             return True

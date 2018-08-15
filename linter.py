@@ -49,6 +49,11 @@ class SublimeSyntax(Linter):
     @classmethod
     def can_lint_view(cls, view, settings):
         """Check if file is 'lintable'."""
+        # Check `super` first bc it has the cheap, fast checks, e.g.
+        # if this linter has been disabled.
+        if not super().can_lint_view(view, settings):
+            return False
+
         filename = view.file_name() or ''
         basename = os.path.basename(filename)
         if not basename or not basename.startswith("syntax_test"):
@@ -61,7 +66,7 @@ class SublimeSyntax(Linter):
             if not match:
                 return False
 
-        return super().can_lint_view(view, settings)
+        return True
 
     def run(self, cmd, code):
         """Perform linting."""

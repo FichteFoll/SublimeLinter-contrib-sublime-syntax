@@ -36,14 +36,15 @@ class SublimeSyntax(Linter):
     in order to provide the full functionality.
     """
 
-    # Must be active on all syntaxes,
-    # so we can check view's eligibility in the `run` method.
-    syntax = '*'
     cmd = None
     regex = (
         r'^[^:]+:(?P<line>\d+):((?P<col>\d+):)? '
         r'(?P<message>.+)'
     )
+    # An empty selector matches all views
+    defaults = {
+        'selector': ''
+    }
     word_re = r'.'  # only highlight a single character
 
     @classmethod

@@ -36,31 +36,44 @@ class SublimeSyntax(Linter):
     in order to provide the full functionality.
     """
 
-    # Must be active on all syntaxes,
-    # so we can check view's eligibility in the `run` method.
-    syntax = '*'
     cmd = None
     regex = (
         r'^[^:]+:(?P<line>\d+):((?P<col>\d+):)? '
         r'(?P<message>.+)'
     )
+    # An empty selector matches all views
+    defaults = {
+        'selector': ''
+    }
     word_re = r'.'  # only highlight a single character
 
+    @classmethod
+    def can_lint_view(cls, view, settings):
+        """Check if file is 'lintable'."""
+        # Check `super` first bc it has the cheap, fast checks, e.g.
+        # if this linter has been disabled.
+        if not super().can_lint_view(view, settings):
+            return False
+
+        filename = view.file_name() or ''
+        basename = os.path.basename(filename)
+
+
+        # Fast path
+        if basename and basename.startswith("syntax_test"):
+            return True
+
+        # But, essentially all files can be syntax tests, if they contain
+        # a magic first line
+        first_line = view.substr(view.line(0))
+        match = re.match(r'^(\S*) SYNTAX TEST "([^"]*)"', first_line)
+        if match:
+            return True
+
+        return False
+
     def run(self, cmd, code):
-        """Check if file is 'lintable' and perform linting."""
-        # It has to start with `"syntax_test"`
-        # and has a specific first line, technically.
-        # We only require one of each
-        # (to also lint unsaved views).
-        basename = os.path.basename(self.filename)
-        if not basename or not basename.startswith("syntax_test"):
-            # This actually gets reported by the test runner,
-            # so we only check for an additionally qualifying file
-            # if the filename check fails.
-            first_line = code[:code.find("\n")]
-            match = re.match(r'^(\S*) SYNTAX TEST "([^"]*)"', first_line)
-            if not match:
-                return
+        """Perform linting."""
 
         # The syntax test runner only operates on resource files that the resource loader can load,
         # which must reside in a "Packages" folder
@@ -71,7 +84,9 @@ class SublimeSyntax(Linter):
             assertions, test_output_lines = sublime_api.run_syntax_test(resource_path)
 
         output = "\n".join(test_output_lines)
+
         if persist.debug_mode():
+            basename = os.path.basename(self.filename)
             persist.printf('{}: "{}" assertions: {}'.format(p_name, basename, assertions))
             # SublimeLinter internally already prints the output we return
             # persist.printf('{}: "{}" output: \n  {}'.format(p_name, basename,

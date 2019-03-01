@@ -79,6 +79,13 @@ class SublimeSyntax(Linter):
         # Instead, we create a temporary file somewhere in the packages folder
         # and pass that.
         with _temporary_resource_file(code, prefix="syntax_test_") as resource_path:
+            # Some change in ST caused the newly created file not to get picked up in time,
+            # so we add an artificial delay.
+            # This is a sucky solution,
+            # but I can't think of anything else.
+            # TOFIX Remove this hack
+            import time
+            time.sleep(0.2)
             assertions, test_output_lines = sublime_api.run_syntax_test(resource_path)
 
         logger.debug('assertions: {}'.format(assertions))

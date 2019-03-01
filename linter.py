@@ -81,8 +81,10 @@ class SublimeSyntax(Linter):
         with _temporary_resource_file(code, prefix="syntax_test_") as resource_path:
             assertions, test_output_lines = sublime_api.run_syntax_test(resource_path)
 
-        output = "\n".join(test_output_lines)
         logger.debug('assertions: {}'.format(assertions))
+        output = "\n".join(test_output_lines)
+        if "unable to read file" in output:
+            logger.error(output)
 
         return output
 

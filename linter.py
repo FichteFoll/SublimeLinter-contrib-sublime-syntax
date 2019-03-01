@@ -35,7 +35,7 @@ class SublimeSyntax(Linter):
     in order to provide the full functionality.
     """
 
-    cmd = None
+    cmd = None  # We implement a custom `run` method
     regex = (
         r'^[^:]+:(?P<line>\d+):((?P<col>\d+):)? '
         r'(?P<message>.+)'
@@ -72,12 +72,12 @@ class SublimeSyntax(Linter):
 
     def run(self, cmd, code):
         """Perform linting."""
+        if not code:
+            return
 
         # The syntax test runner only operates on resource files that the resource loader can load,
         # which must reside in a "Packages" folder
         # and has the restriction of only working on saved files.
-        # Instead, we create a temporary file somewhere in the packages folder
-        # and pass that.
         with _temporary_resource_file(code, prefix="syntax_test_") as resource_path:
             # Some change in ST caused the newly created file not to get picked up in time,
             # so we add an artificial delay.
@@ -104,9 +104,11 @@ _temp_path = None
 
 
 def plugin_loaded():
-    """Build and remove temporary path."""
-    # Required for sublime.packages_path().
-    # ST only "loads resources" from the Packages dir.
+    """Build and remove temporary path.
+
+    Required for sublime.packages_path()
+    because ST only "loads resources" from the Packages dir.
+    """
     global _temp_path
     packages_path = sublime.packages_path()
     _temp_path = os.path.join(packages_path, _temp_dir_name)
@@ -116,7 +118,8 @@ def plugin_loaded():
 
 def plugin_unloaded():
     """Remove temporary path."""
-    # Don't block plugin unloading by not catching an exception
+    # Don't block plugin unloading by not catching an exception.
+    # Has been fixed in 3189.
     try:
         _remove_temp_path()
     except Exception:

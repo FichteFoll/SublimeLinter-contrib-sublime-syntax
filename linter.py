@@ -11,17 +11,16 @@
 """This module exports the SublimeSyntax plugin class."""
 
 import contextlib
+import logging
 import re
-import os.path
+import os
 
 import sublime
 import sublime_api
 
-from SublimeLinter.lint import Linter, persist
+from SublimeLinter.lint import Linter
 
-
-# For debug printing
-p_name = "sublime-syntax"
+logger = logging.getLogger("SublimeLinter.plugin.sublime-syntax")
 
 
 class SublimeSyntax(Linter):
@@ -58,7 +57,6 @@ class SublimeSyntax(Linter):
         filename = view.file_name() or ''
         basename = os.path.basename(filename)
 
-
         # Fast path
         if basename and basename.startswith("syntax_test"):
             return True
@@ -84,13 +82,7 @@ class SublimeSyntax(Linter):
             assertions, test_output_lines = sublime_api.run_syntax_test(resource_path)
 
         output = "\n".join(test_output_lines)
-
-        if persist.debug_mode():
-            basename = os.path.basename(self.filename)
-            persist.printf('{}: "{}" assertions: {}'.format(p_name, basename, assertions))
-            # SublimeLinter internally already prints the output we return
-            # persist.printf('{}: "{}" output: \n  {}'.format(p_name, basename,
-            #                                                 "\n  ".join(test_output_lines)))
+        logger.debug('assertions: {}'.format(assertions))
 
         return output
 
@@ -127,16 +119,13 @@ def _remove_temp_path():
     """Try to clean our temp dir if it exists."""
     if os.path.exists(_temp_path):
         if os.path.isdir(_temp_path):
-            def onerror(function, path, excinfo):
-                persist.printf("{}: Unable to delete '{}' while cleaning up temporary directory"
-                               .format(p_name, path))
-                import traceback
-                traceback.print_exc(*excinfo)
+            def onerror(function, path, exc_info):
+                logger.exception("Unable to delete '%s' while cleaning up temporary directory",
+                                 path, exc_info=exc_info)
             import shutil
             shutil.rmtree(_temp_path, onerror=onerror)
         else:
-            persist.printf("{}: For some reason, '{}' is a file. Removing..."
-                           .format(p_name, _temp_path))
+            logger.warning("For some reason, '%s' is a file. Removing...", _temp_path)
             os.remove(_temp_path)
 
 
@@ -158,8 +147,7 @@ def _temporary_resource_file(text, prefix='', suffix=''):
 
     try:
         fd, temp_file_path = tempfile.mkstemp(prefix=prefix, suffix=suffix, dir=_temp_path)
-        if persist.debug_mode():
-            persist.printf("{}: created temporary file at {}".format(p_name, temp_file_path))
+        logger.debug("created temporary file at '%s'", temp_file_path)
 
         try:
             with open(fd, 'w', encoding='utf-8') as f:
@@ -177,5 +165,4 @@ def _temporary_resource_file(text, prefix='', suffix=''):
         try:
             os.rmdir(_temp_path)
         except OSError as e:
-            if persist.debug_mode():
-                persist.printf("{}: unable to delete temporary folder; {}".format(p_name, e))
+            logger.debug("unable to delete temporary folder; %s", e)

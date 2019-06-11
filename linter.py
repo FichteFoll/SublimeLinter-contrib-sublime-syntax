@@ -80,12 +80,21 @@ class SublimeSyntax(Linter):
         # and has the restriction of only working on saved files.
         with _temporary_resource_file(code, prefix="syntax_test_") as resource_path:
             # Some change in ST caused the newly created file not to get picked up in time,
-            # so we add an artificial delay.
-            # This is a sucky solution,
-            # but I can't think of anything else.
-            # TOFIX Remove this hack
+            # so we wait until the file can be loaded.
             import time
-            time.sleep(0.2)
+            start_time = time.time()
+            while time.time() <= start_time + 1:
+                try:
+                    sublime.load_binary_resource(resource_path)
+                except OSError:
+                    logger.debug("ST couldn't find our temporary file; re-polling…")
+                    time.sleep(0.1)
+                else:
+                    break
+            else:
+                logger.warning("Waiting for ST to find our temporary file '%r' timed out",
+                               resource_path)
+
             assertions, test_output_lines = sublime_api.run_syntax_test(resource_path)
 
         logger.debug('assertions: {}'.format(assertions))

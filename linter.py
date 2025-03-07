@@ -22,6 +22,7 @@ from SublimeLinter.lint import Linter
 
 logger = logging.getLogger("SublimeLinter.plugin.sublime-syntax")
 
+carats = re.compile(r'\^+\s*')
 
 class SublimeSyntax(Linter):
 
@@ -37,14 +38,35 @@ class SublimeSyntax(Linter):
 
     cmd = None  # We implement a custom `run` method
     regex = (
-        r'^[^:]+:(?P<line>\d+):((?P<col>\d+):)? '
-        r'(?P<message>.+)'
+        r'^.+?:\d+:(?P<col>\d+)\n'
+        r'(?P<error>.+)\n'
+        r'\d+ \| .+\n'
+        r'(?P<line>\d+) \| (?P<message>.+)\n'
     )
+    multiline = True
     # An empty selector matches all views
     defaults = {
         'selector': ''
     }
     word_re = r'.'  # only highlight a single character
+
+    def reposition_match(self, line, col, m, virtual_view):
+        err_pos = 0
+        err_len = len(m.message)
+        msg = ""
+        if "<-" in m.message:
+            err_pos = m.message.index("<-") + 2
+            msg = m.message.split("<-")[1]
+        else:
+            car = carats.search(m.message)
+            if car:
+                err_pos = car.end()
+                msg = m.message[car.end():]
+            else:
+                return super().reposition_match(line, col, m, virtual_view)
+
+        m.message = msg
+        return (line, err_pos, err_len)
 
     @classmethod
     def can_lint_view(cls, view, settings):
@@ -85,6 +107,7 @@ class SublimeSyntax(Linter):
             start_time = time.time()
             while time.time() <= start_time + 1:
                 try:
+                    #raise OSError
                     sublime.load_binary_resource(resource_path)
                 except OSError:
                     logger.debug("ST couldn't find our temporary file; re-polling…")
@@ -94,12 +117,12 @@ class SublimeSyntax(Linter):
             else:
                 logger.warning("Waiting for ST to find our temporary file '%r' timed out",
                                resource_path)
-
             assertions, test_output_lines = sublime_api.run_syntax_test(resource_path)
 
         logger.debug('assertions: {}'.format(assertions))
         output = "\n".join(test_output_lines)
-        if "unable to read file" in output:
+        logger.debug("\n" + output)
+        if "unable to read file2" in output:
             logger.error(output)
 
         return output
@@ -186,4 +209,4 @@ def _temporary_resource_file(text, prefix='', suffix=''):
         try:
             os.rmdir(_temp_path)
         except OSError as e:
-            logger.debug("unable to delete temporary folder; %s", e)
+            logger.warning("unable to delete temporary folder; %s", e)

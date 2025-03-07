@@ -107,7 +107,6 @@ class SublimeSyntax(Linter):
             start_time = time.time()
             while time.time() <= start_time + 1:
                 try:
-                    #raise OSError
                     sublime.load_binary_resource(resource_path)
                 except OSError:
                     logger.debug("ST couldn't find our temporary file; re-polling…")
@@ -117,12 +116,12 @@ class SublimeSyntax(Linter):
             else:
                 logger.warning("Waiting for ST to find our temporary file '%r' timed out",
                                resource_path)
+
             assertions, test_output_lines = sublime_api.run_syntax_test(resource_path)
 
         logger.debug('assertions: {}'.format(assertions))
         output = "\n".join(test_output_lines)
-        logger.debug("\n" + output)
-        if "unable to read file2" in output:
+        if "unable to read file" in output:
             logger.error(output)
 
         return output
@@ -209,4 +208,4 @@ def _temporary_resource_file(text, prefix='', suffix=''):
         try:
             os.rmdir(_temp_path)
         except OSError as e:
-            logger.warning("unable to delete temporary folder; %s", e)
+            logger.debug("unable to delete temporary folder; %s", e)

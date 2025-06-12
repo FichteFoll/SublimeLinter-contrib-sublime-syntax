@@ -37,14 +37,25 @@ class SublimeSyntax(Linter):
 
     cmd = None  # We implement a custom `run` method
     regex = (
-        r'^[^:]+:(?P<line>\d+):((?P<col>\d+):)? '
-        r'(?P<message>.+)'
+        r'^.+?:\d+:(?P<col>\d+)\n'
+        # `message` includes everything until we find two line breaks
+        r'(?P<error_type>.+?): (?P<message>.+\n'
+        r'\d+ \| .+\n'
+        # Capturing `line_text` and `markers` here makes repositioning easier
+        r'(?P<line>\d+) \| (?P<line_text>(?P<markers>.*(<-|\^+|@+)\s*).+)\n'
+        r'[\S\s]*?'
+        r')\n\n'
     )
+    multiline = True
     # An empty selector matches all views
     defaults = {
         'selector': ''
     }
-    word_re = r'.'  # only highlight a single character
+
+    def reposition_match(self, line, col, m, virtual_view):
+        err_pos = len(m.markers)
+        err_len = len(m.line_text)
+        return (line, err_pos, err_len)
 
     @classmethod
     def can_lint_view(cls, view, settings):
@@ -98,7 +109,8 @@ class SublimeSyntax(Linter):
             assertions, test_output_lines = sublime_api.run_syntax_test(resource_path)
 
         logger.debug('assertions: {}'.format(assertions))
-        output = "\n".join(test_output_lines)
+        # Ensure each error is terminated by two line breaks
+        output = "\n".join(test_output_lines) + "\n"
         if "unable to read file" in output:
             logger.error(output)
 

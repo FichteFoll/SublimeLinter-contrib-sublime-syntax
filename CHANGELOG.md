@@ -1,6 +1,15 @@
 SublimeLinter-contrib-sublime-syntax Changelog
 ==============================================
 
+v2.0.0 (2025-06-12)
+-------------------
+
+- Update for new syntax test output of build 4181+. (#6, @camila314, @FichteFoll)
+- Make the first line match more accurate when determining whether the linter should be active. (#7)
+- Require the file name prefix to be `syntax_test_` with the trailing underline, just like the ST core.
+- Mark plugin as compatible with the Python 3.8 plugin host.
+
+
 v1.1.2 (2019-06-11)
 -------------------
 

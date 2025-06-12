@@ -69,7 +69,7 @@ class SublimeSyntax(Linter):
         basename = os.path.basename(filename)
 
         # Fast path
-        if basename and basename.startswith("syntax_test"):
+        if basename and basename.startswith("syntax_test_"):
             return True
 
         # But, essentially all files can be syntax tests, if they contain

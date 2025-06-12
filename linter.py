@@ -1,12 +1,5 @@
-#
-# linter.py
-# Linter for SublimeLinter3, a code checking framework for Sublime Text 3
-#
-# Written by FichteFoll
-# Copyright (c) 2016 FichteFoll
-#
-# License: MIT
-#
+# A linter plugin for SublimeLinter,
+# a code checking framework for Sublime Text.
 
 """This module exports the SublimeSyntax plugin class."""
 

@@ -75,11 +75,9 @@ class SublimeSyntax(Linter):
         # But, essentially all files can be syntax tests, if they contain
         # a magic first line
         first_line = view.substr(view.line(0))
-        match = re.match(r'^(\S*) SYNTAX TEST "([^"]*)"', first_line)
-        if match:
-            return True
-
-        return False
+        # regex taken from Default/run_syntax_tests.py
+        match = re.match(b'^.*SYNTAX TEST .*"(.*?)"', first_line)
+        return bool(match)
 
     def run(self, cmd, code):
         """Perform linting."""

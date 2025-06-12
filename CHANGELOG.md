@@ -1,6 +1,12 @@
 SublimeLinter-contrib-sublime-syntax Changelog
 ==============================================
 
+v2.0.1 (2025-06-12)
+-------------------
+
+- Fixed a regression in the first line check, causing it not to function at all.
+
+
 v2.0.0 (2025-06-12)
 -------------------
 

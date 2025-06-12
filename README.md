@@ -37,21 +37,15 @@ To install via Package Control,
 do the following:
 
 1. Within Sublime Text,
-   bring up the [Command Palette][cmd]
-   and type `install`.
-   Among the commands
-   you should see `Package Control: Install Package`.
-   If that command is not highlighted,
-   use the keyboard or mouse to select it.
-   There will be a pause of a few seconds
-   while Package Control fetches the list of available plugins.
+   bring up the [Command Palette][cmd],
+   locate the `Package Control: Install Package` command via your keyboard
+   and hit enter.
+   There may be a small delay here
+   until Package Control has fetched the list of available packages.
 
 1. When the plugin list appears,
-   type `sublime-syntax`.
-   Among the entries
-   you should see `SublimeLinter-contrib-sublime-syntax`.
-   If that entry is not highlighted,
-   use the keyboard or mouse to select it.
+   locate `SublimeLinter-contrib-sublime-syntax` via your keyboard
+   and hit enter.
 
 ## Settings
 

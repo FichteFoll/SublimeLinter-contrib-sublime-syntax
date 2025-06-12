@@ -69,7 +69,7 @@ class SublimeSyntax(Linter):
         # a magic first line
         first_line = view.substr(view.line(0))
         # regex taken from Default/run_syntax_tests.py
-        match = re.match(b'^.*SYNTAX TEST .*"(.*?)"', first_line)
+        match = re.match('^.*SYNTAX TEST .*"(.*?)"', first_line)
         return bool(match)
 
     def run(self, cmd, code):
